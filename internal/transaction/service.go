@@ -2,22 +2,25 @@ package transaction
 
 import (
 	"akupeduli/internal/campaign"
+	"akupeduli/internal/payment"
+
 	"errors"
 )
 
 type Service interface {
 	GetTransactionsByCampaignId(input GetCampaignTransactionsInput) ([]Transaction, error)
 	GetTransactionsByUserId(userId int) ([]Transaction, error)
-	CreateTransaction(input CreateTransactionInput) (Transaction, error)
+	CreateTransaction(input CreateTransactionInput) (Transaction, string, error)
 }
 
 type service struct {
 	repository         Repository
 	campaignRepository campaign.Repository
+	payment            payment.PaymentService
 }
 
-func NewService(repository Repository, campaignRepository campaign.Repository) *service {
-	return &service{repository, campaignRepository}
+func NewService(repository Repository, campaignRepository campaign.Repository, payment payment.PaymentService) *service {
+	return &service{repository, campaignRepository, payment}
 }
 
 func (s *service) GetTransactionsByCampaignId(input GetCampaignTransactionsInput) ([]Transaction, error) {
@@ -46,7 +49,7 @@ func (s *service) GetTransactionsByUserId(userId int) ([]Transaction, error) {
 	return transactions, nil
 }
 
-func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, error) {
+func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, string, error) {
 	transaction := Transaction{
 		ID:     input.CampaignId,
 		Amount: input.Amount,
@@ -55,7 +58,11 @@ func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, 
 	}
 	newTransaction, err := s.repository.Save(transaction)
 	if err != nil {
-		return newTransaction, err
+		return newTransaction, "", err
 	}
-	return newTransaction, nil
+	token, err := s.payment.GetToken(newTransaction.ID, input.Amount, input.User)
+	if err != nil {
+		return newTransaction, "", err
+	}
+	return newTransaction, token, nil
 }

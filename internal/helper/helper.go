@@ -3,8 +3,9 @@ package helper
 import "github.com/go-playground/validator/v10"
 
 type Response struct {
-	Meta Meta        `json:"meta"`
-	Data interface{} `json:"data"`
+	Meta  Meta        `json:"meta"`
+	Data  interface{} `json:"data"`
+	Token string      `json:"token,omitempty"`
 }
 
 type Meta struct {
@@ -13,18 +14,24 @@ type Meta struct {
 	Status  string `json:"status"`
 }
 
-func APIResponse(message string, code int, status string, data interface{}) Response {
+func APIResponse(message string, code int, status string, data interface{}, token ...string) Response {
 	meta := Meta{
 		Message: message,
 		Code:    code,
 		Status:  status,
 	}
-	jsonResponse := Response{
-		Meta: meta,
-		Data: data,
-	}
 
-	return jsonResponse
+	var tok string
+	if len(token) > 0 {
+		tok = token[0] // ambil token pertama jika ada
+	}
+	// jika tidak ada token, tok tetap "" → tidak muncul di JSON karena ,omitempty
+
+	return Response{
+		Meta:  meta,
+		Data:  data,
+		Token: tok,
+	}
 }
 
 func FormatValidationError(err error) []string {

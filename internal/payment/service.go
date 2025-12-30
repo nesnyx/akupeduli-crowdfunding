@@ -2,7 +2,7 @@ package payment
 
 import (
 	"akupeduli/internal/config"
-	"akupeduli/internal/transaction"
+
 	"akupeduli/internal/user"
 	"errors"
 	"fmt"
@@ -11,8 +11,8 @@ import (
 	"github.com/veritrans/go-midtrans"
 )
 
-type Service interface {
-	GetToken(transaction transaction.Transaction, user user.User) (string, error)
+type PaymentService interface {
+	GetToken(transactionID int, amount int, user user.User) (string, error)
 }
 
 type service struct {
@@ -23,8 +23,8 @@ func NewService(cfg *config.Config) *service {
 	return &service{cfg}
 }
 
-func (s *service) GetToken(transaction transaction.Transaction, user user.User) (string, error) {
-	if transaction.ID <= 0 || transaction.Amount <= 0 {
+func (s *service) GetToken(transactionID int, amount int, user user.User) (string, error) {
+	if transactionID <= 0 || amount <= 0 {
 		return "", errors.New("invalid transaction")
 	}
 	if user.Email == "" || user.Name == "" {
@@ -40,8 +40,8 @@ func (s *service) GetToken(transaction transaction.Transaction, user user.User) 
 
 	snapRequest := &midtrans.SnapReq{
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  strconv.Itoa(transaction.ID),
-			GrossAmt: int64(transaction.Amount),
+			OrderID:  strconv.Itoa(transactionID),
+			GrossAmt: int64(amount),
 		},
 		CustomerDetail: &midtrans.CustDetail{
 			Email: user.Email,
