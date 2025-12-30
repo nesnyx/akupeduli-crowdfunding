@@ -1,8 +1,8 @@
 package transaction
 
 import (
-	"akupeduli/campaign"
-	"akupeduli/user"
+	"akupeduli/internal/campaign"
+	"akupeduli/internal/user"
 	"time"
 )
 

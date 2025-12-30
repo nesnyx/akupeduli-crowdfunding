@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"akupeduli/campaign"
-	"akupeduli/helper"
-	"akupeduli/user"
+	"akupeduli/internal/campaign"
+	"akupeduli/internal/helper"
+	"akupeduli/internal/user"
 	"fmt"
 	"net/http"
 	"strconv"

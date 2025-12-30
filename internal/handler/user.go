@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"akupeduli/auth"
-	"akupeduli/helper"
-	"akupeduli/user"
+	"akupeduli/internal/auth"
+	"akupeduli/internal/helper"
+	"akupeduli/internal/user"
 	"fmt"
 	"net/http"
 

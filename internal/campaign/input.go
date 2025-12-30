@@ -1,6 +1,6 @@
 package campaign
 
-import "akupeduli/user"
+import "akupeduli/internal/user"
 
 type GetCampaignDetailInput struct {
 	ID int `uri:"id" binding:"required"`
