@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"akupeduli/helper"
-	"akupeduli/transaction"
-	"akupeduli/user"
+	"akupeduli/internal/helper"
+	"akupeduli/internal/transaction"
+	"akupeduli/internal/user"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -51,4 +51,29 @@ func (h *transactionHandler) GetUserTransactions(c *gin.Context) {
 	}
 	response := helper.APIResponse("Users transactions", http.StatusOK, "success", transaction.FormatCampaignTransactions(transactions))
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *transactionHandler) CreateTransaction(c *gin.Context) {
+	var input transaction.CreateTransactionInput
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+		response := helper.APIResponse("Failed to create Transaction", http.StatusBadRequest, "error", errorMessage)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	currentUser := c.MustGet("currentUser").(user.User)
+
+	input.User = currentUser
+
+	newTransaction, err := h.service.CreateTransaction(input)
+	if err != nil {
+		response := helper.APIResponse("Failed to create new Transaction", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	response := helper.APIResponse("Users transactions", http.StatusOK, "success", newTransaction)
+	c.JSON(http.StatusOK, response)
+
 }

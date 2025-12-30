@@ -1,7 +1,7 @@
 package campaign
 
 import (
-	"akupeduli/user"
+	"akupeduli/internal/user"
 	"time"
 )
 

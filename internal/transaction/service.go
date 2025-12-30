@@ -1,13 +1,14 @@
 package transaction
 
 import (
-	"akupeduli/campaign"
+	"akupeduli/internal/campaign"
 	"errors"
 )
 
 type Service interface {
 	GetTransactionsByCampaignId(input GetCampaignTransactionsInput) ([]Transaction, error)
 	GetTransactionsByUserId(userId int) ([]Transaction, error)
+	CreateTransaction(input CreateTransactionInput) (Transaction, error)
 }
 
 type service struct {
@@ -30,11 +31,11 @@ func (s *service) GetTransactionsByCampaignId(input GetCampaignTransactionsInput
 		return []Transaction{}, errors.New("not an owner of the campaign")
 	}
 
-	trasanctions, err := s.repository.GetByCampaignId(input.ID)
+	transactions, err := s.repository.GetByCampaignId(input.ID)
 	if err != nil {
-		return trasanctions, err
+		return transactions, err
 	}
-	return trasanctions, nil
+	return transactions, nil
 }
 
 func (s *service) GetTransactionsByUserId(userId int) ([]Transaction, error) {
@@ -43,4 +44,18 @@ func (s *service) GetTransactionsByUserId(userId int) ([]Transaction, error) {
 		return transactions, err
 	}
 	return transactions, nil
+}
+
+func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, error) {
+	transaction := Transaction{
+		ID:     input.CampaignId,
+		Amount: input.Amount,
+		UserId: input.User.ID,
+		Status: "pending",
+	}
+	newTransaction, err := s.repository.Save(transaction)
+	if err != nil {
+		return newTransaction, err
+	}
+	return newTransaction, nil
 }

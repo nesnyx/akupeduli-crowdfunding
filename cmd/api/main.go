@@ -1,33 +1,45 @@
 package main
 
 import (
-	"akupeduli/auth"
-	"akupeduli/campaign"
-	"akupeduli/handler"
-	"akupeduli/helper"
-	"akupeduli/transaction"
-	"akupeduli/user"
+	"akupeduli/internal/auth"
+	"akupeduli/internal/campaign"
+	"akupeduli/internal/config"
+	"akupeduli/internal/handler"
+	"akupeduli/internal/helper"
+	"akupeduli/internal/transaction"
+	"akupeduli/internal/user"
 	"log"
 	"net/http"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/mysql"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
 func main() {
-	dsn := "root:@tcp(127.0.0.1:3306)/peduli?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	dsn := "database.db"
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	if err := db.AutoMigrate(
+		&user.User{},
+		&campaign.Campaign{},
+		&transaction.Transaction{},
+	); err != nil {
+		log.Fatalf("AutoMigrate failed: %v", err)
+	}
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
 
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
-	authService := auth.NewService()
+	authService := auth.NewService(cfg)
 	campaignRepository := campaign.NewRepository(db)
 	campaignService := campaign.NewService(campaignRepository)
 
@@ -53,10 +65,12 @@ func main() {
 	api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.UploadImage)
 
 	// Transactions
-	api.GET("/campaings/:id/transactions", transactionHandler.GetCampaignTransactions)
+	api.GET("/campaings/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
 	api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
 
-	router.Run()
+	if err := router.Run(":4001"); err != nil {
+		log.Fatalf("Failed to run server: %v", err)
+	}
 }
 
 func authMiddleware(authService auth.Service, userService user.Service) gin.HandlerFunc {
@@ -95,6 +109,8 @@ func authMiddleware(authService auth.Service, userService user.Service) gin.Hand
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
+
+		// get
 		c.Set("currentUser", user)
 
 	}
