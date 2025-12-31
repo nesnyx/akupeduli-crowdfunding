@@ -9,6 +9,7 @@ import (
 	"akupeduli/internal/payment"
 	"akupeduli/internal/transaction"
 	"akupeduli/internal/user"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -25,6 +26,19 @@ func SetupRouterUser(routerGroup *gin.RouterGroup, cfg *config.Config, db *gorm.
 		router.POST("/login", userHandler.Login)
 		router.POST("/email_checkers", userHandler.CheckEmailAvailability)
 		router.POST("/avatars", middleware.AuthMiddleware(authService, userService), userHandler.UploadAvatar)
+		router.GET("/me", middleware.AuthMiddleware(authService, userService), func(ctx *gin.Context) {
+			data := ctx.MustGet("currentUser").(user.User)
+			ctx.JSON(http.StatusOK, gin.H{
+				"data": map[string]interface{}{
+					"id":         data.ID,
+					"name":       data.Name,
+					"email":      data.Email,
+					"occupation": data.Occupation,
+					"role":       data.Role,
+					"avatar":     data.AvatarFileName,
+				},
+			})
+		})
 	}
 }
 func SetupRouterTransaction(routerGroup *gin.RouterGroup, db *gorm.DB, cfg *config.Config) {

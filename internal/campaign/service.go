@@ -59,7 +59,6 @@ func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
 
 	slugMake := fmt.Sprintf("%s %d", input.Name, input.User.ID)
 	campaign.Slug = slug.Make(slugMake)
-	// generated slug
 
 	newCampaign, err := s.repository.Save(campaign)
 	if err != nil {
