@@ -41,7 +41,7 @@ func main() {
 	routes.SetupRouterCampaign(api, db, cfg)
 	routes.SetupRouterTransaction(api, db, cfg)
 
-	if err := router.Run(":4001"); err != nil {
+	if err := router.Run(":" + cfg.Port); err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}
 }

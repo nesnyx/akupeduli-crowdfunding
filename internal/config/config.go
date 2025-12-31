@@ -23,7 +23,7 @@ func LoadConfig() (*Config, error) {
 	jwtSecret := getEnv("JWT_SECRET_KEY", "")
 
 	AppConfig = &Config{
-		Port:              getEnv("PORT", "8080"),
+		Port:              getEnv("PORT", ""),
 		JWTSecretKey:      []byte(jwtSecret),
 		MidtransClientKey: getEnv("MIDTRANS_CLIENT_KEY", ""),
 		MidtransServerKey: getEnv("MIDTRANS_SERVER_KEY", ""),
