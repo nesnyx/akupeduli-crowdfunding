@@ -77,7 +77,7 @@ export default function CharityCrowdfunding() {
 
           <div className="hidden md:flex gap-4">
 
-            <a className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition">
+            <a href='/auth' className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition">
               Masuk
             </a>
           </div>
@@ -127,12 +127,13 @@ export default function CharityCrowdfunding() {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white">
                   <div className="text-6xl mb-2">❤️</div>
-                  <p className="font-semibold text-lg">Untuk Sesama Kita</p>
+                  <img src="../../public/donation.jpg" alt="" />
                 </div>
               </div>
               <div className="absolute top-4 right-4 w-12 h-12 bg-white rounded-full opacity-30"></div>
               <div className="absolute bottom-8 left-8 w-8 h-8 bg-red-400 rounded-full"></div>
             </div>
+
           </div>
         </div>
       </section>

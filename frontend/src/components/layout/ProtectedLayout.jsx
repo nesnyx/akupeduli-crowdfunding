@@ -1,8 +1,13 @@
-export default function ProtectedLayout() {
+import { Navigate, Outlet } from "react-router-dom";
 
-    return (
-        <div>
-            <h1>Protected Layout</h1>
-        </div>
-    )
-}   
+
+
+export default function ProtectedLayout() {
+    const auth = localStorage.getItem("token");
+
+    if (!auth) {
+        return <Navigate to="/auth" replace />;
+    }
+    return <Outlet />
+
+}
