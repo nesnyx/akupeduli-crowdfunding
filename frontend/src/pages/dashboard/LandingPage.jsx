@@ -76,10 +76,10 @@ export default function CharityCrowdfunding() {
           </div>
 
           <div className="hidden md:flex gap-4">
-            <button className="text-gray-700 hover:text-gray-900">Masuk</button>
-            <button className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition">
-              Daftar
-            </button>
+
+            <a className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition">
+              Masuk
+            </a>
           </div>
 
           <button
@@ -96,7 +96,7 @@ export default function CharityCrowdfunding() {
               <a href="#" className="text-gray-700">Untuk Organisasi</a>
               <a href="#" className="text-gray-700">Berdonasi</a>
               <a href="#" className="text-gray-700">Cara Bekerja</a>
-              <button className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold w-full">Daftar</button>
+              <a href="/auth"><button className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold w-full">Masuk</button></a>
             </div>
           </div>
         )}
