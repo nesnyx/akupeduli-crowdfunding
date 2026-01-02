@@ -24,6 +24,8 @@ func SetupRouterUser(routerGroup *gin.RouterGroup, cfg *config.Config, db *gorm.
 	{
 		router.POST("/register", userHandler.RegisterUser)
 		router.POST("/login", userHandler.Login)
+		router.GET("/google/login", userHandler.LoginGoogle)
+		router.GET("/google/callback", userHandler.GoogleCallback)
 		router.POST("/email_checkers", userHandler.CheckEmailAvailability)
 		router.POST("/avatars", middleware.AuthMiddleware(authService, userService), userHandler.UploadAvatar)
 		router.GET("/me", middleware.AuthMiddleware(authService, userService), func(ctx *gin.Context) {
