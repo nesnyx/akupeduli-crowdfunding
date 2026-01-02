@@ -14,7 +14,10 @@ export default function Authentication() {
         confirmPassword: ''
     });
     const [errors, setErrors] = useState({});
-
+    const handleGoogleLogin = () => {
+        // Arahkan langsung ke endpoint login di backend kamu
+        window.location.href = "http://localhost:4001/api/v1/users/google/login";
+    };
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -324,7 +327,7 @@ export default function Authentication() {
 
                         {/* Social Login */}
                         <div className="grid grid-cols-1 gap-4 mb-8">
-                            <button type="button" className="w-full border-2 border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:border-gray-400 transition flex items-center justify-center gap-2">
+                            <button onClick={handleGoogleLogin} type="button" className="w-full border-2 border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:border-gray-400 transition flex items-center justify-center gap-2">
                                 <FcGoogle size={24} />
                             </button>
 
