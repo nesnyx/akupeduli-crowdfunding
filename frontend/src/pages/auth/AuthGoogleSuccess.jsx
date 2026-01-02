@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import useAuthStore from '../../store/authStore';
 
 const AuthGoogleSuccess = () => {
     const navigate = useNavigate();
     const location = useLocation();
-
+    const { checkAuth } = useAuthStore();
     useEffect(() => {
         // Ambil token dari hash
         const hash = location.hash;
@@ -12,23 +13,18 @@ const AuthGoogleSuccess = () => {
         const token = params.get('token');
 
         if (token) {
-            // 1. Simpan token
             localStorage.setItem('token', token);
-
-            // 2. Beri sedikit jeda agar storage tersinkronisasi (opsional tapi membantu)
             const timeout = setTimeout(() => {
-                // 3. Gunakan replace agar tidak balik lagi ke sini saat klik back
-                navigate('/campaign/browse', { replace: true });
-
-                // Jika kamu pakai reload untuk refresh state auth global:
-                // window.location.href = '/campaign/browse'; 
+                checkAuth().then(() => {
+                    navigate('/campaign/browse', { replace: true });
+                });
             }, 100);
 
             return () => clearTimeout(timeout);
         } else {
             navigate('/auth', { replace: true });
         }
-    }, [navigate, location]);
+    }, [navigate, location, checkAuth]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">

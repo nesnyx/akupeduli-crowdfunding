@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Heart, Users, Zap, BriefcaseBusiness, Loader2, AlertCircle } from 'lucide-react';
 import { FcGoogle } from "react-icons/fc";
 import { authentication } from '../../integration/auth';
+import useAuthStore from '../../store/authStore';
 
 export default function Authentication() {
     const navigate = useNavigate();
@@ -88,6 +89,7 @@ export default function Authentication() {
                 localStorage.setItem('token', token);
 
                 // Gunakan navigate agar lebih smooth daripada window.location
+                await useAuthStore.getState().checkAuth();
                 navigate('/campaign/browse');
             } else {
                 // Implementasi Register Manual kamu di sini

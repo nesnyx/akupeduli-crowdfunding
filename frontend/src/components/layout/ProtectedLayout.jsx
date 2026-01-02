@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import useAuthStore from "../../store/authStore";
+import { useEffect } from "react";
 
 
 export default function ProtectedLayout() {

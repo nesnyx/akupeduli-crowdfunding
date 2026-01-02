@@ -1,4 +1,5 @@
 import axios from 'axios';
+import useAuthStore from '../store/authStore';
 
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -24,9 +25,9 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            // Jika token tidak valid atau expired, hapus token dan logout
-            localStorage.removeItem('token');
-            window.location.href = '/auth';
+            console.warn("Sesi telah berakhir. Mengalihkan ke halaman login...");
+            useAuthStore.getState().logout();
+            alert("Sesi Anda telah berakhir, silakan login kembali.");
         }
         return Promise.reject(error);
     }
