@@ -23,6 +23,11 @@ func NewService(repository Repository) *service {
 	return &service{repository}
 }
 
+const (
+	ProviderGoogle = "google"
+	ProviderLocal  = "local"
+)
+
 func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	user := User{}
 	user.Name = input.Name
@@ -34,7 +39,7 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	}
 	user.PasswordHash = string(passwordHash)
 	user.Role = "user"
-
+	user.Provider = input.Provider
 	newUser, err := s.repository.Save(user)
 	if err != nil {
 		return newUser, err

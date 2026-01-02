@@ -1,8 +1,11 @@
 package main
 
 import (
+	"akupeduli/internal/campaign"
 	"akupeduli/internal/config"
 	"akupeduli/internal/routes"
+	"akupeduli/internal/transaction"
+	"akupeduli/internal/user"
 	"log"
 	"net/http"
 
@@ -17,13 +20,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	// if err := db.AutoMigrate(
-	// 	&user.User{},
-	// 	&campaign.Campaign{},
-	// 	&transaction.Transaction{},
-	// ); err != nil {
-	// 	log.Fatalf("AutoMigrate failed: %v", err)
-	// }
+	if err := db.AutoMigrate(
+		&user.User{},
+		&campaign.Campaign{},
+		&transaction.Transaction{},
+	); err != nil {
+		log.Fatalf("AutoMigrate failed: %v", err)
+	}
 
 	cfg, err := config.LoadConfig()
 	if err != nil {

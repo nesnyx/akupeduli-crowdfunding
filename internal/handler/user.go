@@ -5,11 +5,13 @@ import (
 	"akupeduli/internal/helper"
 	"akupeduli/internal/user"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type userHandler struct {
@@ -35,6 +37,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
+	input.Provider = user.ProviderLocal
 	newUser, err := h.userService.RegisterUser(input)
 	if err != nil {
 		response := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", nil)
@@ -55,89 +58,71 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 func (h *userHandler) LoginGoogle(c *gin.Context) {
 	state := uuid.New().String()
-
-	// Simpan state di cookie selama 5-10 menit
 	c.SetCookie("oauth_state", state, 600, "/", "", false, true)
-
-	url := h.authService.GetGoogleLoginURL(state) // Modifikasi service untuk terima state
+	url := h.authService.GetGoogleLoginURL(state)
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
+
 func (h *userHandler) GoogleCallback(c *gin.Context) {
 	stateQuery := c.Query("state")
-	stateCookie, _ := c.Cookie("oauth_state")
-	if stateQuery == "" || stateQuery != stateCookie {
-		response := helper.APIResponse("Invalid oauth state", http.StatusBadRequest, "error", nil)
-		c.JSON(http.StatusBadRequest, response)
-		return
-	}
-	code := c.Query("code")
-	if code == "" {
-		response := helper.APIResponse("Google code not found", http.StatusBadRequest, "error", nil)
-		c.JSON(http.StatusBadRequest, response)
+	stateCookie, err := c.Cookie("oauth_state")
+
+	// Debugging Cookie jika stateQuery != stateCookie
+	if err != nil || stateQuery != stateCookie {
+		fmt.Printf("State Mismatch! Query: %s, Cookie: %s, Err: %v\n", stateQuery, stateCookie, err)
+		c.JSON(http.StatusBadRequest, helper.APIResponse("Invalid oauth state", http.StatusBadRequest, "error", nil))
 		return
 	}
 
-	// 1. Ambil data user dari Google via Service
+	code := c.Query("code")
 	userInfoByte, err := h.authService.GetGoogleUserInfo(code)
 	if err != nil {
-		response := helper.APIResponse("Failed to get user info", http.StatusBadRequest, "error", nil)
-		c.JSON(http.StatusBadRequest, response)
+		c.JSON(http.StatusBadRequest, helper.APIResponse("Failed to get user info", http.StatusBadRequest, "error", nil))
 		return
 	}
 
-	// 2. Unmarshal data google
 	var googleUser struct {
-		Email   string `json:"email"`
-		Name    string `json:"name"`
-		ID      string `json:"id"`
-		Picture string `json:"picture"`
+		Email string `json:"email"`
+		Name  string `json:"name"`
+		ID    string `json:"id"`
 	}
-	if err := json.Unmarshal(userInfoByte, &googleUser); err != nil {
-		response := helper.APIResponse("Failed to parse user info", http.StatusBadRequest, "error", nil)
-		c.JSON(http.StatusBadRequest, response)
-		return
-	}
+	json.Unmarshal(userInfoByte, &googleUser)
 
-	// 3. Cari user di database berdasarkan email
 	loggedUser, err := h.userService.GetUserByEmail(googleUser.Email)
-
-	// Jika user tidak ditemukan, maka registrasi otomatis
 	if err != nil {
-		// PERBAIKAN: Gunakan googleUser, bukan loggedUser
-		registerInput := user.RegisterUserInput{
-			Name:       googleUser.Name,
-			Email:      googleUser.Email,
-			Password:   googleUser.ID, // Password sementara
-			Occupation: "Google User",
-		}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			fmt.Println("User baru terdeteksi, memulai registrasi...")
+			registerInput := user.RegisterUserInput{
+				Name:       googleUser.Name,
+				Email:      googleUser.Email,
+				Password:   googleUser.ID,
+				Occupation: "Google User",
+				Provider:   user.ProviderGoogle,
+			}
 
-		loggedUser, err = h.userService.RegisterUser(registerInput)
-		if err != nil {
-			response := helper.APIResponse("Failed to register user from Google", http.StatusBadRequest, "error", nil)
-			c.JSON(http.StatusBadRequest, response)
+			loggedUser, err = h.userService.RegisterUser(registerInput)
+			if err != nil {
+				fmt.Println("Gagal Registrasi:", err)
+				c.JSON(http.StatusBadRequest, helper.APIResponse("Failed to register", 400, "error", nil))
+				return
+			}
+		} else {
+
+			fmt.Println("Database Error:", err)
+			c.JSON(http.StatusInternalServerError, helper.APIResponse("Database connection error", 500, "error", nil))
 			return
 		}
 	}
 
-	// 4. Generate JWT Token aplikasi kita sendiri
 	token, err := h.authService.GenerateToken(loggedUser.ID)
 	if err != nil {
-		response := helper.APIResponse("Failed to generate application token", http.StatusInternalServerError, "error", nil)
-		c.JSON(http.StatusInternalServerError, response)
+		c.JSON(http.StatusInternalServerError, helper.APIResponse("Token failed", 500, "error", nil))
 		return
 	}
 
-	// 5. Redirect ke Frontend
-	// Gunakan URL dari config agar tidak hardcoded
-	frontendURL := "http://localhost:5173/auth-success"
-
-	// Menggunakan '#' (fragment) lebih aman karena token tidak masuk log server
-	finalRedirectURL := fmt.Sprintf("%s#token=%s", frontendURL, token)
-
-	// Hapus cookie state setelah digunakan
 	c.SetCookie("oauth_state", "", -1, "/", "", false, true)
-
-	c.Redirect(http.StatusFound, finalRedirectURL)
+	frontendURL := "http://localhost:5173/auth-success"
+	c.Redirect(http.StatusFound, fmt.Sprintf("%s#token=%s", frontendURL, token))
 }
 
 func (h *userHandler) Login(c *gin.Context) {
