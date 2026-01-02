@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, Phone, Heart, Users, Zap, BriefcaseBusiness } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock, User, Phone, Heart, Users, Zap, BriefcaseBusiness, Loader2, AlertCircle } from 'lucide-react';
 import { FcGoogle } from "react-icons/fc";
+import { authentication } from '../../integration/auth';
+
 export default function Authentication() {
+    const navigate = useNavigate();
     const [isLogin, setIsLogin] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // State untuk form
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -13,81 +20,104 @@ export default function Authentication() {
         password: '',
         confirmPassword: ''
     });
+
+    // State untuk error handling
     const [errors, setErrors] = useState({});
+    const [globalError, setGlobalError] = useState('');
+
     const handleGoogleLogin = () => {
-        // Arahkan langsung ke endpoint login di backend kamu
-        window.location.href = "http://localhost:4001/api/v1/users/google/login";
+        setIsLoading(true);
+        authentication.loginWithGoogle();
     };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
+
+        // Bersihkan error per field saat user mengetik
         if (errors[name]) {
-            setErrors(prev => ({
-                ...prev,
-                [name]: ''
-            }));
+            setErrors(prev => ({ ...prev, [name]: '' }));
         }
+        if (globalError) setGlobalError('');
     };
 
-    const validateEmail = (email) => {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    };
+    const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrors({});
+        setGlobalError('');
+
         const newErrors = {};
 
-        if (isLogin) {
-            if (!formData.email) newErrors.email = 'Email harus diisi';
-            else if (!validateEmail(formData.email)) newErrors.email = 'Email tidak valid';
-
-            if (!formData.password) newErrors.password = 'Password harus diisi';
-            else if (formData.password.length < 6) newErrors.password = 'Password minimal 6 karakter';
-        } else {
-            if (!formData.name) newErrors.name = 'Nama harus diisi';
-            if (!formData.occupation) newErrors.occupation = 'occupation/Pekerjaan harus diisi';
-            if (!formData.email) newErrors.email = 'Email harus diisi';
-            else if (!validateEmail(formData.email)) newErrors.email = 'Email tidak valid';
-
-            if (!formData.phone) newErrors.phone = 'Nomor telepon harus diisi';
-            else if (!/^(\+62|0)[0-9]{9,12}$/.test(formData.phone)) newErrors.phone = 'Nomor telepon tidak valid';
-
-            if (!formData.password) newErrors.password = 'Password harus diisi';
-            else if (formData.password.length < 6) newErrors.password = 'Password minimal 6 karakter';
-
-            if (!formData.confirmPassword) newErrors.confirmPassword = 'Konfirmasi password harus diisi';
-            else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Password tidak cocok';
+        // --- VALIDASI CLIENT SIDE ---
+        if (!formData.email) {
+            newErrors.email = 'Email harus diisi';
+        } else if (!validateEmail(formData.email)) {
+            newErrors.email = 'Format email tidak valid';
         }
 
-        if (Object.keys(newErrors).length === 0) {
-            alert(isLogin ? 'Login berhasil!' : 'Akun berhasil dibuat!');
-            console.log('Form submitted:', formData);
-        } else {
+        if (!formData.password) {
+            newErrors.password = 'Password harus diisi';
+        } else if (formData.password.length < 6) {
+            newErrors.password = 'Password minimal 6 karakter';
+        }
+
+        if (!isLogin) {
+            if (!formData.name) newErrors.name = 'Nama lengkap harus diisi';
+            if (!formData.occupation) newErrors.occupation = 'Pekerjaan harus diisi';
+            if (!formData.phone) newErrors.phone = 'Nomor telepon harus diisi';
+            if (formData.password !== formData.confirmPassword) {
+                newErrors.confirmPassword = 'Konfirmasi password tidak cocok';
+            }
+        }
+
+        if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            return;
+        }
+
+        // --- PROSES API ---
+        setIsLoading(true);
+        try {
+            if (isLogin) {
+                const response = await authentication.loginManual(formData.email, formData.password);
+
+                // Simpan Token & Redirect
+                const token = response.data.token;
+                localStorage.setItem('token', token);
+
+                // Gunakan navigate agar lebih smooth daripada window.location
+                navigate('/campaign/browse');
+            } else {
+                // Implementasi Register Manual kamu di sini
+                // const response = await authentication.registerManual(formData);
+                console.log('Registering user...', formData);
+                alert('Fitur registrasi sedang disiapkan');
+            }
+        } catch (error) {
+            console.error("Auth Error:", error);
+            // Menangkap pesan dari helper.APIResponse backend (meta.message)
+            const backendMessage = error.response?.data?.meta?.message || "Terjadi kesalahan pada server. Silakan coba lagi.";
+            setGlobalError(backendMessage);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleToggleMode = () => {
         setIsLogin(!isLogin);
-        setFormData({
-            name: '',
-            email: '',
-            phone: '',
-            occupation: '',
-            password: '',
-            confirmPassword: ''
-        });
+        setFormData({ name: '', email: '', phone: '', occupation: '', password: '', confirmPassword: '' });
         setErrors({});
+        setGlobalError('');
     };
 
     return (
         <div className="min-h-screen bg-linear-to-br from-red-50 via-white to-red-50 flex items-center justify-center p-4">
             <div className="w-full max-w-4xl">
                 <div className="grid md:grid-cols-2 gap-8 items-center">
-                    {/* Left Side - Branding & Info */}
+
+                    {/* Left Side - Branding (Hidden on Mobile) */}
                     <div className="hidden md:flex flex-col justify-center">
                         <div className="mb-8">
                             <h1 className="text-5xl font-bold text-red-600 mb-4">AkuPeduli</h1>
@@ -96,266 +126,150 @@ export default function Authentication() {
                             </p>
                             <p className="text-gray-600 text-lg leading-relaxed">
                                 {isLogin
-                                    ? 'Masuk ke akun Anda untuk melanjutkan perjalanan amal dan berbagi kasih kepada sesama yang membutuhkan.'
-                                    : 'Bergabunglah dengan jutaan orang berhati mulia yang telah membuat perbedaan nyata dalam kehidupan banyak orang.'
-                                }
+                                    ? 'Masuk ke akun Anda untuk melanjutkan perjalanan amal dan berbagi kasih kepada sesama.'
+                                    : 'Bergabunglah dengan komunitas yang telah membuat perbedaan nyata dalam kehidupan banyak orang.'}
                             </p>
                         </div>
 
                         <div className="space-y-6">
-                            <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
-                                    <Heart className="text-red-600" size={24} />
+                            {[
+                                { icon: Heart, title: "Dampak Nyata", desc: "Donasi Anda langsung membantu mereka yang membutuhkan" },
+                                { icon: Users, title: "Komunitas Peduli", desc: "Terhubung dengan jutaan orang berhati mulia" },
+                                { icon: Zap, title: "Proses Cepat", desc: "Donasi mudah dan pantau dampak secara real-time" }
+                            ].map((item, i) => (
+                                <div key={i} className="flex items-start gap-4">
+                                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                                        <item.icon className="text-red-600" size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900">{item.title}</h3>
+                                        <p className="text-gray-600 text-sm">{item.desc}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="font-semibold text-gray-900">Dampak Nyata</h3>
-                                    <p className="text-gray-600 text-sm">Setiap donasi Anda langsung membantu mereka yang membutuhkan</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
-                                    <Users className="text-red-600" size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-gray-900">Komunitas Peduli</h3>
-                                    <p className="text-gray-600 text-sm">Terhubung dengan jutaan orang yang berbagi nilai kemanusiaan</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
-                                    <Zap className="text-red-600" size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-gray-900">Proses Mudah</h3>
-                                    <p className="text-gray-600 text-sm">Donasi, pantau kampanye, dan lihat dampak secara real-time</p>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Right Side - Form */}
-                    <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
-                        <div className="mb-8">
+                    {/* Right Side - Form Card */}
+                    <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-100">
+                        <div className="mb-8 text-center md:text-left">
                             <h2 className="text-3xl font-bold text-gray-900 mb-2">
                                 {isLogin ? 'Masuk ke Akun' : 'Daftar Akun Baru'}
                             </h2>
-                            <p className="text-gray-600">
-                                {isLogin
-                                    ? 'Gunakan email dan password Anda untuk masuk'
-                                    : 'Isi data lengkap Anda untuk memulai'
-                                }
+                            <p className="text-gray-600 italic">
+                                {isLogin ? 'Gunakan email dan password untuk masuk' : 'Lengkapi data diri Anda'}
                             </p>
                         </div>
 
-                        <div onSubmit={handleSubmit} className="space-y-4">
-                            {/* Name Field - Signup Only */}
+                        {/* Alert Error Global */}
+                        {globalError && (
+                            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded flex items-center gap-3 animate-pulse">
+                                <AlertCircle size={20} className="shrink-0" />
+                                <span>{globalError}</span>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Signup Fields */}
                             {!isLogin && (
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Nama Lengkap
-                                    </label>
+                                <>
                                     <div className="relative">
                                         <User className="absolute left-3 top-3.5 text-gray-400" size={20} />
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleInputChange}
-                                            placeholder="Masukkan nama lengkap Anda"
-                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${errors.name ? 'border-red-500' : 'border-gray-300'
-                                                }`}
-                                        />
+                                        <input type="text" name="name" value={formData.name} onChange={handleInputChange}
+                                            placeholder="Nama Lengkap" className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none ${errors.name ? 'border-red-500' : 'border-gray-300'}`} />
+                                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                                     </div>
-                                    {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-                                </div>
-                            )}
 
-                            {/* Email Field */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Email
-                                </label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-3.5 text-gray-400" size={20} />
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        placeholder="nama@email.com"
-                                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${errors.email ? 'border-red-500' : 'border-gray-300'
-                                            }`}
-                                    />
-                                </div>
-                                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                            </div>
-
-                            {/* Phone Field - Signup Only */}
-                            {!isLogin && (
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Nomor Telepon
-                                    </label>
-                                    <div className="relative">
-                                        <Phone className="absolute left-3 top-3.5 text-gray-400" size={20} />
-                                        <input
-                                            type="tel"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleInputChange}
-                                            placeholder="08xxxxxxxxxx atau +62xxxxxxxxxx"
-                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${errors.phone ? 'border-red-500' : 'border-gray-300'
-                                                }`}
-                                        />
-                                    </div>
-                                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-                                </div>
-                            )}
-
-                            {/* Occupation Field - Signup Only */}
-                            {!isLogin && (
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Occupation
-                                    </label>
                                     <div className="relative">
                                         <BriefcaseBusiness className="absolute left-3 top-3.5 text-gray-400" size={20} />
-                                        <input
-                                            type="text"
-                                            name="phone"
-                                            value={formData.occupation}
-                                            onChange={handleInputChange}
-                                            placeholder="Sofware Engineer, Doctor, etc."
-                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${errors.occupation ? 'border-red-500' : 'border-gray-300'
-                                                }`}
-                                        />
+                                        <input type="text" name="occupation" value={formData.occupation} onChange={handleInputChange}
+                                            placeholder="Pekerjaan (e.g. Dokter, Designer)" className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none ${errors.occupation ? 'border-red-500' : 'border-gray-300'}`} />
+                                        {errors.occupation && <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>}
                                     </div>
-                                    {errors.occupation && <p className="text-red-500 text-sm mt-1">{errors.occupation}</p>}
-                                </div>
+
+                                    <div className="relative">
+                                        <Phone className="absolute left-3 top-3.5 text-gray-400" size={20} />
+                                        <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange}
+                                            placeholder="Nomor Telepon" className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none ${errors.phone ? 'border-red-500' : 'border-gray-300'}`} />
+                                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                                    </div>
+                                </>
                             )}
 
-                            {/* Password Field */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Password
-                                </label>
+                            {/* Email & Password (Always Shown) */}
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-3.5 text-gray-400" size={20} />
+                                <input type="email" name="email" value={formData.email} onChange={handleInputChange}
+                                    placeholder="Alamat Email" className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none ${errors.email ? 'border-red-500' : 'border-gray-300'}`} />
+                                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                            </div>
+
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-3.5 text-gray-400" size={20} />
+                                <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleInputChange}
+                                    placeholder="Password" className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none ${errors.password ? 'border-red-500' : 'border-gray-300'}`} />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-gray-400">
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                            </div>
+
+                            {!isLogin && (
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-3.5 text-gray-400" size={20} />
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleInputChange}
-                                        placeholder="Minimal 6 karakter"
-                                        className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${errors.password ? 'border-red-500' : 'border-gray-300'
-                                            }`}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                                    >
-                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange}
+                                        placeholder="Konfirmasi Password" className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`} />
+                                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-3.5 text-gray-400">
+                                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                     </button>
-                                </div>
-                                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-                            </div>
-
-                            {/* Confirm Password - Signup Only */}
-                            {!isLogin && (
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Konfirmasi Password
-                                    </label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-3.5 text-gray-400" size={20} />
-                                        <input
-                                            type={showConfirmPassword ? 'text' : 'password'}
-                                            name="confirmPassword"
-                                            value={formData.confirmPassword}
-                                            onChange={handleInputChange}
-                                            placeholder="Ulangi password Anda"
-                                            className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                                                }`}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                                        >
-                                            {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                        </button>
-                                    </div>
-                                    {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+                                    {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
                                 </div>
                             )}
 
-                            {/* Remember Me / Forgot Password - Login Only */}
-                            {/* {isLogin && (
-                                <div className="flex items-center justify-between">
-                                    <label className="flex items-center">
-                                        <input type="checkbox" className="w-4 h-4 rounded border-gray-300" />
-                                        <span className="ml-2 text-sm text-gray-600">Ingat saya</span>
-                                    </label>
-                                    <button type="button" className="text-sm text-red-600 hover:text-red-700 font-semibold">
-                                        Lupa password?
-                                    </button>
-                                </div>
-                            )} */}
-
-                            {/* Submit Button */}
+                            {/* Action Button */}
                             <button
-                                onClick={handleSubmit}
-                                type="button"
-                                className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition mt-6"
+                                type="submit"
+                                disabled={isLoading}
+                                className={`w-full flex items-center justify-center gap-2 font-bold py-3.5 rounded-xl transition duration-300 mt-6 text-white shadow-lg ${isLoading ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 active:scale-95'
+                                    }`}
                             >
-                                {isLogin ? 'Masuk ke Akun' : 'Daftar Sekarang'}
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="animate-spin" size={20} />
+                                        <span>Memproses...</span>
+                                    </>
+                                ) : (
+                                    isLogin ? 'Masuk ke Akun' : 'Daftar Sekarang'
+                                )}
                             </button>
+                        </form>
+
+                        <div className="relative my-8">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+                            <div className="relative flex justify-center text-sm"><span className="px-3 bg-white text-gray-500 font-medium">Atau</span></div>
                         </div>
 
-                        {/* Divider */}
-                        <div className="relative my-6">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-300"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white text-gray-500">atau</span>
-                            </div>
-                        </div>
+                        {/* Google Social Login */}
+                        <button
+                            onClick={handleGoogleLogin}
+                            disabled={isLoading}
+                            type="button"
+                            className="w-full border-2 border-gray-200 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <FcGoogle size={24} />
+                            <span>Lanjutkan dengan Google</span>
+                        </button>
 
-                        {/* Social Login */}
-                        <div className="grid grid-cols-1 gap-4 mb-8">
-                            <button onClick={handleGoogleLogin} type="button" className="w-full border-2 border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:border-gray-400 transition flex items-center justify-center gap-2">
-                                <FcGoogle size={24} />
-                            </button>
-
-                        </div>
-
-                        {/* Toggle Login/Signup */}
-                        <div className="text-center">
-
-                            <p className="text-gray-600">
+                        <div className="text-center mt-8 space-y-4">
+                            <p className="text-gray-600 font-medium">
                                 {isLogin ? 'Belum punya akun? ' : 'Sudah punya akun? '}
-                                <button
-                                    type="button"
-                                    onClick={handleToggleMode}
-                                    className="text-red-600 hover:text-red-700 font-semibold"
-                                >
+                                <button onClick={handleToggleMode} className="text-red-600 hover:underline font-bold">
                                     {isLogin ? 'Daftar sekarang' : 'Masuk di sini'}
                                 </button>
                             </p>
-                            <a className='text-gray-600' href="/">Beranda</a>
+                            <a href="/" className="inline-block text-gray-400 hover:text-red-600 transition text-sm">Kembali ke Beranda</a>
                         </div>
                     </div>
-                </div>
-
-                {/* Mobile Bottom Info */}
-                <div className="md:hidden mt-8 text-center">
-                    <p className="text-gray-600 text-sm mb-4">
-                        Dengan melanjutkan, Anda menyetujui Syarat Layanan dan Kebijakan Privasi kami
-                    </p>
                 </div>
             </div>
         </div>

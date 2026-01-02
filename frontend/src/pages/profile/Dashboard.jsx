@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X, Bell, User, LogOut, Heart, Wallet, TrendingUp, Eye, EyeOff, ChevronRight, Search, Filter } from 'lucide-react';
+import { authentication } from '../../integration/auth';
 
 export default function DasboardDonatur() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -189,7 +190,7 @@ export default function DasboardDonatur() {
                         </div>
 
                         <div className="pt-6 border-t border-gray-700">
-                            <button className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-800 transition flex items-center gap-3 text-red-400">
+                            <button onClick={authentication.logout} className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-800 transition flex items-center gap-3 text-red-400">
                                 <LogOut size={20} />
                                 <span>Logout</span>
                             </button>

@@ -15,6 +15,7 @@ type Config struct {
 	ClientIDGoogle     string
 	ClientSecretGoogle string
 	RedirectGoogleURL  string
+	DatabaseName       string
 }
 
 var AppConfig *Config
@@ -33,6 +34,7 @@ func LoadConfig() (*Config, error) {
 		ClientIDGoogle:     getEnv("CLIENT_ID_GOOGLE", ""),
 		ClientSecretGoogle: getEnv("CLIENT_SECRET_GOOGLE", ""),
 		RedirectGoogleURL:  getEnv("REDIRECT_GOOGLE_URL", ""),
+		DatabaseName:       getEnv("DATABASE_NAME", ""),
 	}
 	return AppConfig, nil
 }
