@@ -113,9 +113,9 @@ export default function CharityCrowdfunding() {
               AkuPeduli adalah platform crowdfunding berbasis amal yang menghubungkan orang-orang berhati mulia dengan mereka yang membutuhkan bantuan. Bersama-sama kita bisa membuat perbedaan nyata dalam kehidupan banyak orang.
             </p>
             <div className="flex gap-4 flex-wrap">
-              <button className="bg-red-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-600 transition">
+              <a href='/campaign/browse'  className="bg-red-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-600 transition">
                 Mulai Berdonasi
-              </button>
+              </a >
               <button className="border-2 border-gray-300 text-gray-900 px-8 py-3 rounded-lg font-semibold hover:border-gray-400 transition">
                 Pelajari Lebih Lanjut
               </button>
@@ -161,7 +161,7 @@ export default function CharityCrowdfunding() {
               <p className="text-gray-600">Lihat kampanye-kampanye terbaru yang membutuhkan bantuan Anda hari ini.</p>
             </div>
             <button className="border-2 border-gray-300 px-6 py-2 rounded-lg text-gray-900 font-semibold hover:border-gray-400 transition">
-              Lihat Semua
+              <a href="/campaign/browse">Lihat Semua</a>
             </button>
           </div>
 
@@ -300,9 +300,9 @@ export default function CharityCrowdfunding() {
           <p className="text-lg text-red-100 mb-8">
             Bergabunglah dengan jutaan orang yang telah membuat perbedaan. Donasi Anda, apapun nominalnya, sangat berarti bagi mereka yang membutuhkan.
           </p>
-          <button className="bg-white text-red-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-red-50 transition">
+          <a href='/campaign/browse' className="bg-white text-red-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-red-50 transition">
             Mulai Donasi Sekarang
-          </button>
+          </a>
         </div>
       </section>
 

@@ -15,8 +15,8 @@ function App() {
       <Routes>
         <Route path="/" element={<CrowdfundingPlatform />} />
         <Route path="/auth" element={<Authentication />} />
-        <Route path="/campaign/browse" element={<CampaignBrowse />} />
         <Route element={<ProtectedLayout />}>
+          <Route path="/campaign/browse" element={<CampaignBrowse />} />
           <Route path="/dashboard" element={<DasboardDonatur />} />
         </Route>
 

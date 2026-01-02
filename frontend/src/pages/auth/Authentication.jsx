@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, Phone, Heart, Users, Zap } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, Heart, Users, Zap, BriefcaseBusiness } from 'lucide-react';
 import { FcGoogle } from "react-icons/fc";
 export default function Authentication() {
     const [isLogin, setIsLogin] = useState(true);
@@ -9,6 +9,7 @@ export default function Authentication() {
         name: '',
         email: '',
         phone: '',
+        occupation: '',
         password: '',
         confirmPassword: ''
     });
@@ -44,6 +45,7 @@ export default function Authentication() {
             else if (formData.password.length < 6) newErrors.password = 'Password minimal 6 karakter';
         } else {
             if (!formData.name) newErrors.name = 'Nama harus diisi';
+            if (!formData.occupation) newErrors.occupation = 'occupation/Pekerjaan harus diisi';
             if (!formData.email) newErrors.email = 'Email harus diisi';
             else if (!validateEmail(formData.email)) newErrors.email = 'Email tidak valid';
 
@@ -71,6 +73,7 @@ export default function Authentication() {
             name: '',
             email: '',
             phone: '',
+            occupation: '',
             password: '',
             confirmPassword: ''
         });
@@ -205,6 +208,28 @@ export default function Authentication() {
                                         />
                                     </div>
                                     {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                                </div>
+                            )}
+
+                            {/* Occupation Field - Signup Only */}
+                            {!isLogin && (
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Occupation
+                                    </label>
+                                    <div className="relative">
+                                        <BriefcaseBusiness className="absolute left-3 top-3.5 text-gray-400" size={20} />
+                                        <input
+                                            type="text"
+                                            name="phone"
+                                            value={formData.occupation}
+                                            onChange={handleInputChange}
+                                            placeholder="Sofware Engineer, Doctor, etc."
+                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${errors.occupation ? 'border-red-500' : 'border-gray-300'
+                                                }`}
+                                        />
+                                    </div>
+                                    {errors.occupation && <p className="text-red-500 text-sm mt-1">{errors.occupation}</p>}
                                 </div>
                             )}
 

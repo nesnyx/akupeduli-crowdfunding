@@ -294,6 +294,7 @@ export default function CampaignBrowse() {
                             >
                                 <List size={20} className={viewMode === 'list' ? 'text-red-600' : 'text-gray-600'} />
                             </button>
+                            <a href="/dashboard" className={"text-white bg-red-400 p-1 rounded"}>Dashboard</a>
                         </div>
                     </div>
 
