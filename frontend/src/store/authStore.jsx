@@ -16,7 +16,6 @@ const useAuthStore = create((set) => ({
 
         try {
             const response = await getMe();
-            // Asumsi backend mengembalikan { data: { name, email, ... } }
             set({ user: response.data, isAuthenticated: true, loading: false });
         } catch (error) {
             console.error("Auth check failed:", error);

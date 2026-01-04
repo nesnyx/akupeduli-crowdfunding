@@ -11,6 +11,10 @@ export const authentication = {
     logout: () => {
         localStorage.removeItem('token');
         window.location.href = '/auth';
+    },
+    registerManual: async (email, password, occupation, name,) => {
+        const response = await api.post('/users/register', { email, password, occupation, name });
+        return response.data;
     }
 }
 

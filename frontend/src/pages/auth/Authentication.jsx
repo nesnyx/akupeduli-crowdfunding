@@ -67,7 +67,7 @@ export default function Authentication() {
         if (!isLogin) {
             if (!formData.name) newErrors.name = 'Nama lengkap harus diisi';
             if (!formData.occupation) newErrors.occupation = 'Pekerjaan harus diisi';
-            if (!formData.phone) newErrors.phone = 'Nomor telepon harus diisi';
+            // if (!formData.phone) newErrors.phone = 'Nomor telepon harus diisi';
             if (formData.password !== formData.confirmPassword) {
                 newErrors.confirmPassword = 'Konfirmasi password tidak cocok';
             }
@@ -83,23 +83,18 @@ export default function Authentication() {
         try {
             if (isLogin) {
                 const response = await authentication.loginManual(formData.email, formData.password);
-
-                // Simpan Token & Redirect
                 const token = response.data.token;
                 localStorage.setItem('token', token);
-
-                // Gunakan navigate agar lebih smooth daripada window.location
                 await useAuthStore.getState().checkAuth();
                 navigate('/campaign/browse');
             } else {
-                // Implementasi Register Manual kamu di sini
-                // const response = await authentication.registerManual(formData);
-                console.log('Registering user...', formData);
-                alert('Fitur registrasi sedang disiapkan');
+                await authentication.registerManual(formData.email, formData.password, formData.occupation, formData.name);
+                console.log('Registering user..');
+                alert('Registrasi berhasil');
+                window.location.href = '/auth';
             }
         } catch (error) {
             console.error("Auth Error:", error);
-            // Menangkap pesan dari helper.APIResponse backend (meta.message)
             const backendMessage = error.response?.data?.meta?.message || "Terjadi kesalahan pada server. Silakan coba lagi.";
             setGlobalError(backendMessage);
         } finally {
@@ -189,12 +184,12 @@ export default function Authentication() {
                                         {errors.occupation && <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>}
                                     </div>
 
-                                    <div className="relative">
+                                    {/* <div className="relative">
                                         <Phone className="absolute left-3 top-3.5 text-gray-400" size={20} />
                                         <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange}
                                             placeholder="Nomor Telepon" className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none ${errors.phone ? 'border-red-500' : 'border-gray-300'}`} />
                                         {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-                                    </div>
+                                    </div> */}
                                 </>
                             )}
 
