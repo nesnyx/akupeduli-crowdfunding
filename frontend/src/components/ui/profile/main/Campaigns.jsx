@@ -63,22 +63,23 @@ export default function Campaings({ setIsCreateModalOpen, formatCurrency, setSel
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {data?.data.map((cp) => {
-                                const percentage = Math.min((cp.current / cp.goal) * 100, 100);
+                                const percentage = Math.min((cp.CurrentAmount / cp.GoalAmount) * 100, 100);
                                 return (
                                     <tr key={cp.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-5">
                                             <div className="flex flex-col">
-                                                <span className="font-bold text-gray-900 line-clamp-1">{cp.title}</span>
+                                                <span className="font-bold text-gray-900 line-clamp-1">{cp.Name}</span>
                                                 <span className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                                                    <Users size={12} /> {cp.donors} Donatur • {cp.deadline}
+                                                    <Users size={12} /> {cp.BackerCount} Donatur • {cp.Deadline}
                                                 </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-5 w-64">
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex justify-between text-xs font-bold">
-                                                    <span className="text-red-600">{formatCurrency(cp.current)}</span>
+                                                    <span className="text-red-600">{formatCurrency(cp.CurrentAmount)}</span>
                                                     <span className="text-gray-400">{Math.round(percentage)}%</span>
+                                                    <span className="text-gray-400">{formatCurrency(cp.GoalAmount)}</span>
                                                 </div>
                                                 <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
                                                     <div
@@ -89,9 +90,8 @@ export default function Campaings({ setIsCreateModalOpen, formatCurrency, setSel
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${cp.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                                                }`}>
-                                                {cp.status}
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-green-100 text-green-700`}>
+                                                Active
                                             </span>
                                         </td>
                                         <td className="px-6 py-5">
