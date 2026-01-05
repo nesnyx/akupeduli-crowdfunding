@@ -58,6 +58,9 @@ func (s *service) Login(input LoginInput) (User, error) {
 	if user.ID == 0 {
 		return user, errors.New("no user found on that email")
 	}
+	if user.Provider != ProviderLocal {
+		return user, errors.New("user is not local")
+	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 

@@ -1,12 +1,15 @@
-import { Clock, Edit3 } from "lucide-react";
+import { Clock, Edit3, Loader2 } from "lucide-react";
 import { ExternalLink } from "lucide-react";
 import { Plus } from "lucide-react";
 import { TrendingUp } from "lucide-react";
 import { Users } from "lucide-react";
+import { useMyCampaigns } from "../../../../hooks/useCampaigns";
 
 
-
-export default function Campaings({ setIsCreateModalOpen, formatCurrency, myCampaigns, setSelectedCampaign }) {
+export default function Campaings({ setIsCreateModalOpen, formatCurrency, setSelectedCampaign, user }) {
+    const { data, isLoading, isError, error } = useMyCampaigns(user?.id);
+    if (isLoading) return <Loader2 className="animate-spin" />;
+    if (isError) return <div>Error: {error.message}</div>;
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header & CTA */}
@@ -59,7 +62,7 @@ export default function Campaings({ setIsCreateModalOpen, formatCurrency, myCamp
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {myCampaigns.map((cp) => {
+                            {data?.data.map((cp) => {
                                 const percentage = Math.min((cp.current / cp.goal) * 100, 100);
                                 return (
                                     <tr key={cp.id} className="hover:bg-gray-50/50 transition-colors">

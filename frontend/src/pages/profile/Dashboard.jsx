@@ -9,6 +9,7 @@ import Campaings from '../../components/ui/profile/main/Campaigns';
 import Profile from '../../components/ui/profile/main/Profile';
 export default function DasboardDonatur() {
     const { user, logout } = useAuthStore();
+
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
@@ -163,7 +164,7 @@ export default function DasboardDonatur() {
                     )}
 
                     {activeTab === 'campaigns' && (
-                        <Campaings setIsCreateModalOpen={setIsCreateModalOpen} formatCurrency={formatCurrency} myCampaigns={myCampaigns} setSelectedCampaign={setSelectedCampaign} />
+                        <Campaings user={user} setIsCreateModalOpen={setIsCreateModalOpen} formatCurrency={formatCurrency} myCampaigns={myCampaigns} setSelectedCampaign={setSelectedCampaign} />
                     )}
 
                     {activeTab === 'profile' && (
