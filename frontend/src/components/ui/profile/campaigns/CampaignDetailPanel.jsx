@@ -21,15 +21,15 @@ export function CampaignDetailPanel({ isOpen, onClose, campaign }) {
                             <div className="h-40 bg-gray-200 rounded-2xl overflow-hidden">
                                 <div className="w-full h-full bg-linear-to-br from-red-100 to-red-300 flex items-center justify-center text-red-500 italic text-sm">Preview Gambar</div>
                             </div>
-                            <h4 className="text-xl font-bold text-gray-900">{campaign.title}</h4>
+                            <h4 className="text-xl font-bold text-gray-900">{campaign.Name}</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-gray-50 p-3 rounded-xl">
                                     <p className="text-[10px] text-gray-500 font-bold uppercase">Terkumpul</p>
-                                    <p className="text-sm font-bold text-red-600">Rp {campaign.current.toLocaleString()}</p>
+                                    <p className="text-sm font-bold text-red-600">Rp {campaign.CurrentAmount.toLocaleString()}</p>
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded-xl">
                                     <p className="text-[10px] text-gray-500 font-bold uppercase">Donatur</p>
-                                    <p className="text-sm font-bold text-gray-900">{campaign.donors} Orang</p>
+                                    <p className="text-sm font-bold text-gray-900">{campaign.BackerCount} Orang</p>
                                 </div>
                             </div>
                         </div>
