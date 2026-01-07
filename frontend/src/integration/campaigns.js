@@ -9,5 +9,9 @@ export const campaigns = {
     create: async (payload) => {
         const response = await api.post(`/campaigns`, payload);
         return response.data;
+    },
+    update: async (id, payload) => {
+        const response = await api.put(`/campaigns/${id}`, payload);
+        return response.data;
     }
 }

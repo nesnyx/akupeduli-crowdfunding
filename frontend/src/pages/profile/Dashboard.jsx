@@ -7,6 +7,7 @@ import Sidebar from '../../components/ui/profile/sidebar/Sidebar';
 import Dashboard from '../../components/ui/profile/main/Dashboard';
 import Campaings from '../../components/ui/profile/main/Campaigns';
 import Profile from '../../components/ui/profile/main/Profile';
+import { UpdateCampaignModal } from "../../components/ui/profile/campaigns/UpdateCampaignModal";
 export default function DasboardDonatur() {
     const { user, logout } = useAuthStore();
 
@@ -16,6 +17,7 @@ export default function DasboardDonatur() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [selectedCampaign, setSelectedCampaign] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const handleUpdateProfile = (e) => {
@@ -164,7 +166,7 @@ export default function DasboardDonatur() {
                     )}
 
                     {activeTab === 'campaigns' && (
-                        <Campaings user={user} setIsCreateModalOpen={setIsCreateModalOpen} formatCurrency={formatCurrency} myCampaigns={myCampaigns} setSelectedCampaign={setSelectedCampaign} />
+                        <Campaings user={user} setIsCreateModalOpen={setIsCreateModalOpen} formatCurrency={formatCurrency} setIsUpdateModalOpen={setIsUpdateModalOpen} myCampaigns={myCampaigns} setSelectedCampaign={setSelectedCampaign} />
                     )}
 
                     {activeTab === 'profile' && (
@@ -181,6 +183,15 @@ export default function DasboardDonatur() {
                 isOpen={!!selectedCampaign}
                 campaign={selectedCampaign}
                 onClose={() => setSelectedCampaign(null)}
+            />
+
+            <UpdateCampaignModal
+                isOpen={isUpdateModalOpen}
+                campaign={selectedCampaign}
+                onClose={() => {
+                    setIsUpdateModalOpen(false);
+                    setSelectedCampaign(null);
+                }}
             />
         </div>
 

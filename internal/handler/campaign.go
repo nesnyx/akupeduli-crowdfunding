@@ -77,7 +77,6 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 
 func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
 	var inputId campaign.GetCampaignDetailInput
-
 	err := c.ShouldBindUri(&inputId)
 	if err != nil {
 		response := helper.APIResponse("Failed to update a campaign", http.StatusBadRequest, "error", nil)
@@ -95,7 +94,6 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
 		return
 	}
 	inputData.User = currentUser
-
 	updatedCampaign, err := h.service.UpdateCampaign(inputId, inputData)
 	if err != nil {
 		response := helper.APIResponse("Failed to update campaign", http.StatusUnprocessableEntity, "error", nil)

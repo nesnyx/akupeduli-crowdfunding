@@ -5,14 +5,16 @@ import { TrendingUp } from "lucide-react";
 import { Users } from "lucide-react";
 import { useMyCampaigns } from "../../../../hooks/useCampaigns";
 
-
-export default function Campaings({ setIsCreateModalOpen, formatCurrency, setSelectedCampaign, user }) {
+export default function Campaings({ setIsCreateModalOpen, setIsUpdateModalOpen, formatCurrency, setSelectedCampaign, user }) {
     const { data, isLoading, isError, error } = useMyCampaigns(user?.id);
     if (isLoading) return <Loader2 className="animate-spin" />;
     if (isError) return <div>Error: {error.message}</div>;
+    const totalRaised = data?.data?.reduce((acc, curr) => acc + curr.CurrentAmount, 0) || 0;
+    const totalDonors = data?.data?.reduce((acc, curr) => acc + curr.BackerCount, 0) || 0;
+    const activeCount = data?.data?.length || 0;
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header & CTA */}
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900">Kampanye Saya</h2>
@@ -30,21 +32,21 @@ export default function Campaings({ setIsCreateModalOpen, formatCurrency, setSel
                     <div className="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center"><TrendingUp size={24} /></div>
                     <div>
                         <p className="text-xs text-gray-500 font-medium">Total Dana Terkumpul</p>
-                        <p className="text-lg font-bold text-gray-900">{formatCurrency(47500000)}</p>
+                        <p className="text-lg font-bold text-gray-900">{formatCurrency(totalRaised)}</p>
                     </div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"><Users size={24} /></div>
                     <div>
                         <p className="text-xs text-gray-500 font-medium">Total Donatur</p>
-                        <p className="text-lg font-bold text-gray-900">231 Orang</p>
+                        <p className="text-lg font-bold text-gray-900">{totalDonors} Orang</p>
                     </div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
                     <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center"><Clock size={24} /></div>
                     <div>
                         <p className="text-xs text-gray-500 font-medium">Kampanye Aktif</p>
-                        <p className="text-lg font-bold text-gray-900">1 Kampanye</p>
+                        <p className="text-lg font-bold text-gray-900">{activeCount} Kampanye</p>
                     </div>
                 </div>
             </div>
@@ -99,7 +101,9 @@ export default function Campaings({ setIsCreateModalOpen, formatCurrency, setSel
                                                 <button onClick={() => setSelectedCampaign(cp)} title="Lihat Detail" className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                                                     <ExternalLink size={18} />
                                                 </button>
-                                                <button title="Edit Kampanye" className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                <button onClick={() => {
+                                                    setSelectedCampaign(cp); setIsUpdateModalOpen(true)
+                                                }} title="Edit Kampanye" className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                                     <Edit3 size={18} />
                                                 </button>
                                             </div>

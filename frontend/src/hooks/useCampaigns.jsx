@@ -29,3 +29,17 @@ export const useCreateCampaign = (onSuccessCallback) => {
         }
     });
 };
+
+
+export const useUpdateCampaign = (onSuccessCallback) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, ...payload }) => campaigns.update(id, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+            if (onSuccessCallback) onSuccessCallback();
+        },
+    });
+};
+
+
