@@ -43,3 +43,11 @@ export const useUpdateCampaign = (onSuccessCallback) => {
 };
 
 
+export const useBrowseCampaigns = () => {
+    return useQuery({
+        queryKey: ['campaigns', 'browse'], // Key berbeda dengan 'me'
+        queryFn: () => campaigns.getAll(), // Tanpa userId untuk ambil semua
+        staleTime: 1000 * 60 * 2, // Data dianggap fresh selama 2 menit
+    });
+};
+
