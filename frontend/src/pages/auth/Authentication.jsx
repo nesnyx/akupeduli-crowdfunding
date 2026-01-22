@@ -78,7 +78,6 @@ export default function Authentication() {
             return;
         }
 
-        // --- PROSES API ---
         setIsLoading(true);
         try {
             if (isLogin) {
@@ -184,12 +183,7 @@ export default function Authentication() {
                                         {errors.occupation && <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>}
                                     </div>
 
-                                    {/* <div className="relative">
-                                        <Phone className="absolute left-3 top-3.5 text-gray-400" size={20} />
-                                        <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange}
-                                            placeholder="Nomor Telepon" className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none ${errors.phone ? 'border-red-500' : 'border-gray-300'}`} />
-                                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-                                    </div> */}
+                                   
                                 </>
                             )}
 

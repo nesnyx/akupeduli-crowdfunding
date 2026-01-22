@@ -34,7 +34,7 @@ func (s *service) GetToken(transactionID int, amount int, user user.User) (strin
 	midclient := midtrans.NewClient()
 	midclient.ServerKey = s.cfg.MidtransServerKey
 	midclient.ClientKey = s.cfg.MidtransClientKey
-	midclient.APIEnvType = midtrans.Sandbox // atau baca dari config
+	midclient.APIEnvType = midtrans.Sandbox
 
 	snapGateway := midtrans.SnapGateway{Client: midclient}
 
@@ -54,5 +54,5 @@ func (s *service) GetToken(transactionID int, amount int, user user.User) (strin
 		return "", fmt.Errorf("midtrans token generation failed: %w", err)
 	}
 
-	return tokenResp.Token, nil // <-- ini yang frontend butuhkan untuk snap.pay()
+	return tokenResp.RedirectURL, nil
 }

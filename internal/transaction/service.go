@@ -3,6 +3,7 @@ package transaction
 import (
 	"akupeduli/internal/campaign"
 	"akupeduli/internal/payment"
+	"fmt"
 
 	"errors"
 )
@@ -61,6 +62,7 @@ func (s *service) CreateTransaction(input CreateTransactionInput) (Transaction, 
 		return newTransaction, "", err
 	}
 	token, err := s.payment.GetToken(newTransaction.ID, input.Amount, input.User)
+	fmt.Println(token)
 	if err != nil {
 		return newTransaction, "", err
 	}
