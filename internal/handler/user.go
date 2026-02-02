@@ -4,10 +4,14 @@ import (
 	"akupeduli/internal/auth"
 	"akupeduli/internal/helper"
 	"akupeduli/internal/user"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type userHandler struct {
@@ -33,6 +37,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
+	input.Provider = user.ProviderLocal
 	newUser, err := h.userService.RegisterUser(input)
 	if err != nil {
 		response := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", nil)
@@ -49,6 +54,75 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	formatter := user.FormatUser(newUser, token)
 	response := helper.APIResponse("Account has been Registered", http.StatusOK, "success", formatter)
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *userHandler) LoginGoogle(c *gin.Context) {
+	state := uuid.New().String()
+	c.SetCookie("oauth_state", state, 600, "/", "", false, true)
+	url := h.authService.GetGoogleLoginURL(state)
+	c.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+func (h *userHandler) GoogleCallback(c *gin.Context) {
+	stateQuery := c.Query("state")
+	stateCookie, err := c.Cookie("oauth_state")
+
+	// Debugging Cookie jika stateQuery != stateCookie
+	if err != nil || stateQuery != stateCookie {
+		fmt.Printf("State Mismatch! Query: %s, Cookie: %s, Err: %v\n", stateQuery, stateCookie, err)
+		c.JSON(http.StatusBadRequest, helper.APIResponse("Invalid oauth state", http.StatusBadRequest, "error", nil))
+		return
+	}
+
+	code := c.Query("code")
+	userInfoByte, err := h.authService.GetGoogleUserInfo(code)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, helper.APIResponse("Failed to get user info", http.StatusBadRequest, "error", nil))
+		return
+	}
+
+	var googleUser struct {
+		Email string `json:"email"`
+		Name  string `json:"name"`
+		ID    string `json:"id"`
+	}
+	json.Unmarshal(userInfoByte, &googleUser)
+
+	loggedUser, err := h.userService.GetUserByEmail(googleUser.Email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			fmt.Println("User baru terdeteksi, memulai registrasi...")
+			registerInput := user.RegisterUserInput{
+				Name:       googleUser.Name,
+				Email:      googleUser.Email,
+				Password:   googleUser.ID,
+				Occupation: "Google User",
+				Provider:   user.ProviderGoogle,
+			}
+
+			loggedUser, err = h.userService.RegisterUser(registerInput)
+			if err != nil {
+				fmt.Println("Gagal Registrasi:", err)
+				c.JSON(http.StatusBadRequest, helper.APIResponse("Failed to register", 400, "error", nil))
+				return
+			}
+		} else {
+
+			fmt.Println("Database Error:", err)
+			c.JSON(http.StatusInternalServerError, helper.APIResponse("Database connection error", 500, "error", nil))
+			return
+		}
+	}
+
+	token, err := h.authService.GenerateToken(loggedUser.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, helper.APIResponse("Token failed", 500, "error", nil))
+		return
+	}
+
+	c.SetCookie("oauth_state", "", -1, "/", "", false, true)
+	frontendURL := "http://localhost:5173/auth-success"
+	c.Redirect(http.StatusFound, fmt.Sprintf("%s#token=%s", frontendURL, token))
 }
 
 func (h *userHandler) Login(c *gin.Context) {

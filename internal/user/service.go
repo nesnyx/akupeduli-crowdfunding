@@ -12,6 +12,7 @@ type Service interface {
 	IsEmailAvailable(input CheckEmailInput) (bool, error)
 	SaveAvatar(id int, fileLocation string) (User, error)
 	GetUserById(id int) (User, error)
+	GetUserByEmail(email string) (User, error)
 }
 
 type service struct {
@@ -21,6 +22,11 @@ type service struct {
 func NewService(repository Repository) *service {
 	return &service{repository}
 }
+
+const (
+	ProviderGoogle = "google"
+	ProviderLocal  = "local"
+)
 
 func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	user := User{}
@@ -33,7 +39,7 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	}
 	user.PasswordHash = string(passwordHash)
 	user.Role = "user"
-
+	user.Provider = input.Provider
 	newUser, err := s.repository.Save(user)
 	if err != nil {
 		return newUser, err
@@ -51,6 +57,9 @@ func (s *service) Login(input LoginInput) (User, error) {
 	}
 	if user.ID == 0 {
 		return user, errors.New("no user found on that email")
+	}
+	if user.Provider != ProviderLocal {
+		return user, errors.New("user is not local")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
@@ -74,6 +83,13 @@ func (s *service) IsEmailAvailable(input CheckEmailInput) (bool, error) {
 
 }
 
+func (s *service) GetUserByEmail(email string) (User, error) {
+	user, err := s.repository.FindByEmail(email)
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+}
 func (s *service) SaveAvatar(id int, fileLocation string) (User, error) {
 	user, err := s.repository.FindById(id)
 	if err != nil {
