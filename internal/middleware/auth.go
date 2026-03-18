@@ -38,8 +38,7 @@ func AuthMiddleware(authService auth.Service, userService user.Service) gin.Hand
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
-		userId := int(claim["user_id"].(float64))
-
+		userId := claim["user_id"].(string)
 		user, err := userService.GetUserById(userId)
 
 		if err != nil {

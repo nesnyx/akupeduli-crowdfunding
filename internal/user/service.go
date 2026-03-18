@@ -10,8 +10,8 @@ type Service interface {
 	RegisterUser(input RegisterUserInput) (User, error)
 	Login(input LoginInput) (User, error)
 	IsEmailAvailable(input CheckEmailInput) (bool, error)
-	SaveAvatar(id int, fileLocation string) (User, error)
-	GetUserById(id int) (User, error)
+	SaveAvatar(id string, fileLocation string) (User, error)
+	GetUserById(id string) (User, error)
 	GetUserByEmail(email string) (User, error)
 }
 
@@ -55,7 +55,7 @@ func (s *service) Login(input LoginInput) (User, error) {
 	if err != nil {
 		return user, err
 	}
-	if user.ID == 0 {
+	if user.ID == "" {
 		return user, errors.New("no user found on that email")
 	}
 	if user.Provider != ProviderLocal {
@@ -76,7 +76,7 @@ func (s *service) IsEmailAvailable(input CheckEmailInput) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if user.ID == 0 {
+	if user.ID == "" {
 		return true, nil
 	}
 	return false, nil
@@ -90,7 +90,7 @@ func (s *service) GetUserByEmail(email string) (User, error) {
 	}
 	return user, nil
 }
-func (s *service) SaveAvatar(id int, fileLocation string) (User, error) {
+func (s *service) SaveAvatar(id string, fileLocation string) (User, error) {
 	user, err := s.repository.FindById(id)
 	if err != nil {
 		return user, err
@@ -103,12 +103,12 @@ func (s *service) SaveAvatar(id int, fileLocation string) (User, error) {
 	return updatedUser, nil
 }
 
-func (s *service) GetUserById(id int) (User, error) {
+func (s *service) GetUserById(id string) (User, error) {
 	user, err := s.repository.FindById(id)
 	if err != nil {
 		return user, err
 	}
-	if user.ID == 0 {
+	if user.ID == "" {
 		return user, errors.New("no user found on with that id ")
 	}
 	return user, nil

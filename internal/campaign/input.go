@@ -3,7 +3,7 @@ package campaign
 import "akupeduli/internal/user"
 
 type GetCampaignDetailInput struct {
-	ID int `uri:"id" binding:"required"`
+	ID string `uri:"id" binding:"required"`
 }
 
 type CreateCampaignInput struct {
@@ -16,7 +16,7 @@ type CreateCampaignInput struct {
 }
 
 type CreateCampignImageInput struct {
-	CampaignID int  `form:"campaign_id" binding:"required"`
-	IsPrimary  bool `form:"is_primary"`
+	CampaignID string `form:"campaign_id" binding:"required"`
+	IsPrimary  bool   `form:"is_primary"`
 	User       user.User
 }

@@ -4,12 +4,12 @@ import "gorm.io/gorm"
 
 type Repository interface {
 	FindAll() ([]Campaign, error)
-	FindByUserId(userId int) ([]Campaign, error)
-	FindById(id int) (Campaign, error)
+	FindByUserId(userId string) ([]Campaign, error)
+	FindById(id string) (Campaign, error)
 	Save(campaign Campaign) (Campaign, error)
 	Update(campaign Campaign) (Campaign, error)
 	CreateImage(campaign CampaignImages) (CampaignImages, error)
-	MarkAllImagesAsNonPrimary(campaignId int) (bool, error)
+	MarkAllImagesAsNonPrimary(campaignId string) (bool, error)
 }
 
 type repository struct {
@@ -30,7 +30,7 @@ func (r *repository) FindAll() ([]Campaign, error) {
 
 }
 
-func (r *repository) FindByUserId(userId int) ([]Campaign, error) {
+func (r *repository) FindByUserId(userId string) ([]Campaign, error) {
 	var campaigns []Campaign
 	err := r.db.Where("user_id = ?", userId).Preload("User").Find(&campaigns).Error
 	if err != nil {
@@ -39,7 +39,7 @@ func (r *repository) FindByUserId(userId int) ([]Campaign, error) {
 	return campaigns, nil
 }
 
-func (r *repository) FindById(id int) (Campaign, error) {
+func (r *repository) FindById(id string) (Campaign, error) {
 	var campaign Campaign
 	err := r.db.Preload("User").Where("id = ?", id).Find(&campaign).Error
 	if err != nil {
@@ -73,7 +73,7 @@ func (r *repository) CreateImage(campaignImage CampaignImages) (CampaignImages, 
 	return campaignImage, nil
 }
 
-func (r *repository) MarkAllImagesAsNonPrimary(campaignId int) (bool, error) {
+func (r *repository) MarkAllImagesAsNonPrimary(campaignId string) (bool, error) {
 	// update campaign_images set is_primary = false where campaignId = 1
 	err := r.db.Model(&CampaignImages{}).Where("campaign_id = ?", campaignId).Update("is_primary", false).Error
 	if err != nil {

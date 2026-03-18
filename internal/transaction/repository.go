@@ -3,8 +3,8 @@ package transaction
 import "gorm.io/gorm"
 
 type Repository interface {
-	GetByCampaignId(campaignId int) ([]Transaction, error)
-	GetByUserId(userId int) ([]Transaction, error)
+	GetByCampaignId(campaignId string) ([]Transaction, error)
+	GetByUserId(userId string) ([]Transaction, error)
 	Save(transaction Transaction) (Transaction, error)
 }
 
@@ -16,7 +16,7 @@ func NewRepository(db *gorm.DB) *repository {
 	return &repository{db}
 }
 
-func (r *repository) GetByCampaignId(campaignId int) ([]Transaction, error) {
+func (r *repository) GetByCampaignId(campaignId string) ([]Transaction, error) {
 	var transactions []Transaction
 	err := r.db.Where("campaing_id = ?", campaignId).Order("id desc").Find(&transactions).Error
 	if err != nil {
@@ -25,7 +25,7 @@ func (r *repository) GetByCampaignId(campaignId int) ([]Transaction, error) {
 	return transactions, nil
 }
 
-func (r *repository) GetByUserId(userId int) ([]Transaction, error) {
+func (r *repository) GetByUserId(userId string) ([]Transaction, error) {
 	var transactions []Transaction
 	err := r.db.Where("user_id = ?", userId).Order("id desc").Find(&transactions).Error
 	if err != nil {

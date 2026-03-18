@@ -10,7 +10,7 @@ import (
 
 type Service interface {
 	GetTransactionsByCampaignId(input GetCampaignTransactionsInput) ([]Transaction, error)
-	GetTransactionsByUserId(userId int) ([]Transaction, error)
+	GetTransactionsByUserId(userId string) ([]Transaction, error)
 	CreateTransaction(input CreateTransactionInput) (Transaction, string, error)
 }
 
@@ -31,7 +31,7 @@ func (s *service) GetTransactionsByCampaignId(input GetCampaignTransactionsInput
 		return []Transaction{}, err
 	}
 
-	if campaign.UserId != input.User.ID {
+	if campaign.UserID != input.User.ID {
 		return []Transaction{}, errors.New("not an owner of the campaign")
 	}
 
@@ -42,7 +42,7 @@ func (s *service) GetTransactionsByCampaignId(input GetCampaignTransactionsInput
 	return transactions, nil
 }
 
-func (s *service) GetTransactionsByUserId(userId int) ([]Transaction, error) {
+func (s *service) GetTransactionsByUserId(userId string) ([]Transaction, error) {
 	transactions, err := s.repository.GetByUserId(userId)
 	if err != nil {
 		return transactions, err

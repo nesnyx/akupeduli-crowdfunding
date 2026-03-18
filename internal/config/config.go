@@ -16,6 +16,12 @@ type Config struct {
 	ClientSecretGoogle string
 	RedirectGoogleURL  string
 	DatabaseName       string
+	PostgresDB         string
+	PostgresUser       string
+	PostgresPassword   string
+	PostgresPort       string
+	PostgresHost       string
+	PostgresSSL        string
 }
 
 var AppConfig *Config
@@ -34,7 +40,12 @@ func LoadConfig() (*Config, error) {
 		ClientIDGoogle:     getEnv("CLIENT_ID_GOOGLE", ""),
 		ClientSecretGoogle: getEnv("CLIENT_SECRET_GOOGLE", ""),
 		RedirectGoogleURL:  getEnv("REDIRECT_GOOGLE_URL", ""),
-		DatabaseName:       getEnv("DATABASE_NAME", ""),
+		PostgresDB:         getEnv("POSTGRESQL_DB", ""),
+		PostgresUser:       getEnv("POSTGRESQL_USER", ""),
+		PostgresPassword:   getEnv("POSTGRESQL_PASSWORD", ""),
+		PostgresPort:       getEnv("POSTGRESQL_PORT", ""),
+		PostgresHost:       getEnv("POSTGRESQL_HOST", ""),
+		PostgresSSL:        getEnv("POSTGRESQL_SSL", ""),
 	}
 	return AppConfig, nil
 }

@@ -3,8 +3,8 @@ package campaign
 import "strings"
 
 type CampaignFormatter struct {
-	ID               int    `json:"id"`
-	UserId           int    `json:"user_id"`
+	ID               string `json:"id"`
+	UserId           string `json:"user_id"`
 	Name             string `json:"name"`
 	ShortDescription string `json:"short_description"`
 	ImageURL         string `json:"image_url"`
@@ -16,7 +16,7 @@ type CampaignFormatter struct {
 func FormatCampaign(campaign Campaign) CampaignFormatter {
 	formatter := CampaignFormatter{
 		ID:               campaign.ID,
-		UserId:           campaign.UserId,
+		UserId:           campaign.UserID,
 		Name:             campaign.Name,
 		ShortDescription: campaign.ShortDescription,
 		GoalAmount:       campaign.GoalAmount,
@@ -40,14 +40,14 @@ func FormatCampaigns(campaigns []Campaign) []CampaignFormatter {
 }
 
 type CampaignDetailFormatter struct {
-	ID               int                      `json:"id"`
+	ID               string                   `json:"id"`
 	Name             string                   `json:"name"`
 	ShortDescription string                   `json:"short_description"`
 	Description      string                   `json:"description"`
 	ImageURL         string                   `json:"image_url"`
 	GoalAmount       int                      `json:"goal_amount"`
 	CurrentAmount    int                      `json:"current_amount"`
-	UserId           int                      `json:"user_id"`
+	UserId           string                   `json:"user_id"`
 	Slug             string                   `json:"slug"`
 	Perks            []string                 `json:"perks"`
 	User             CampaignUserFormatter    `json:"user"`
@@ -73,7 +73,7 @@ func FormatCampaignDetail(campaign Campaign) CampaignDetailFormatter {
 		ImageURL:         "",
 		GoalAmount:       campaign.GoalAmount,
 		CurrentAmount:    campaign.CurrentAmount,
-		UserId:           campaign.UserId,
+		UserId:           campaign.UserID,
 		Slug:             campaign.Slug,
 	}
 	if len(campaign.CampaignImages) > 0 {

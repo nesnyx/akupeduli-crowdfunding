@@ -15,7 +15,7 @@ import (
 )
 
 type Service interface {
-	GenerateToken(userId int) (string, error)
+	GenerateToken(userId string) (string, error)
 	ValidateToken(token string) (*jwt.Token, error)
 	GetGoogleLoginURL(state string) string         // Tambahkan ini
 	GetGoogleUserInfo(code string) ([]byte, error) // Tambahkan ini
@@ -42,7 +42,7 @@ func (s *jwtService) GetGoogleLoginURL(state string) string {
 	return s.googleOauthConfig.AuthCodeURL(state)
 }
 
-func (s *jwtService) GenerateToken(userId int) (string, error) {
+func (s *jwtService) GenerateToken(userId string) (string, error) {
 	claim := jwt.MapClaims{}
 	claim["user_id"] = userId
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)

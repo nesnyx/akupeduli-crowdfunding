@@ -3,7 +3,7 @@ package transaction
 import "time"
 
 type CampaignTransactionFormatter struct {
-	ID        int       `json:"id"`
+	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	Amount    int       `json:"amount"`
 	CreatedAt time.Time `json:"created_at"`
@@ -34,7 +34,7 @@ func FormatCampaignTransactions(transactions []Transaction) []CampaignTransactio
 }
 
 type UserTransactionFormatter struct {
-	ID        int               `json:"id"`
+	ID        string            `json:"id"`
 	Amount    int               `json:"amount"`
 	Status    string            `json:"status"`
 	CreatedAt time.Time         `json:"created_at"`

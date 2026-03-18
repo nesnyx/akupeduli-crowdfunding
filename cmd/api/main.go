@@ -3,12 +3,13 @@ package main
 import (
 	"akupeduli/internal/config"
 	"akupeduli/internal/routes"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/glebarez/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +18,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
-	db, err := gorm.Open(sqlite.Open(cfg.DatabaseName), &gorm.Config{})
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", cfg.PostgresHost, cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresDB, cfg.PostgresPort, cfg.PostgresSSL)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -25,11 +27,12 @@ func main() {
 	// 	&user.User{},
 	// 	&campaign.Campaign{},
 	// 	&transaction.Transaction{},
+	// 	&campaign.CampaignImages{},
 	// ); err != nil {
 	// 	log.Fatalf("AutoMigrate failed: %v", err)
 	// }
-
 	router := gin.Default()
+
 	router.Use(gin.Recovery())
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,

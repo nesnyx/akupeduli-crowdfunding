@@ -8,7 +8,7 @@ import (
 )
 
 type Service interface {
-	GetCampaigns(userId int) ([]Campaign, error)
+	GetCampaigns(userId string) ([]Campaign, error)
 	GetCampaignById(input GetCampaignDetailInput) (Campaign, error)
 	CreateCampaign(input CreateCampaignInput) (Campaign, error)
 	UpdateCampaign(id GetCampaignDetailInput, input CreateCampaignInput) (Campaign, error)
@@ -23,8 +23,8 @@ func NewService(repository Repository) *service {
 	return &service{repository}
 }
 
-func (s *service) GetCampaigns(userId int) ([]Campaign, error) {
-	if userId != 0 {
+func (s *service) GetCampaigns(userId string) ([]Campaign, error) {
+	if userId != "" {
 		campaigns, err := s.repository.FindByUserId(userId)
 		if err != nil {
 			return campaigns, err
@@ -57,7 +57,7 @@ func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
 	campaign.GoalAmount = input.GoalAmount
 	campaign.User.ID = input.User.ID
 
-	slugMake := fmt.Sprintf("%s %d", input.Name, input.User.ID)
+	slugMake := fmt.Sprintf("%s %s", input.Name, input.User.ID)
 	campaign.Slug = slug.Make(slugMake)
 
 	newCampaign, err := s.repository.Save(campaign)
@@ -73,7 +73,7 @@ func (s *service) UpdateCampaign(inputId GetCampaignDetailInput, input CreateCam
 		return campaign, err
 	}
 
-	if campaign.UserId != input.User.ID {
+	if campaign.UserID != input.User.ID {
 		return campaign, errors.New("not an owner of the campaign")
 	}
 
@@ -96,7 +96,7 @@ func (s *service) SaveCampaignImage(input CreateCampignImageInput, fileLocation 
 	if err != nil {
 		return CampaignImages{}, err
 	}
-	if campaign.UserId != input.User.ID {
+	if campaign.UserID != input.User.ID {
 		return CampaignImages{}, errors.New("not an owner of the campaign")
 	}
 

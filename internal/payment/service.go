@@ -6,13 +6,12 @@ import (
 	"akupeduli/internal/user"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/veritrans/go-midtrans"
 )
 
 type PaymentService interface {
-	GetToken(transactionID int, amount int, user user.User) (string, error)
+	GetToken(transactionID string, amount int, user user.User) (string, error)
 }
 
 type service struct {
@@ -23,8 +22,8 @@ func NewService(cfg *config.Config) *service {
 	return &service{cfg}
 }
 
-func (s *service) GetToken(transactionID int, amount int, user user.User) (string, error) {
-	if transactionID <= 0 || amount <= 0 {
+func (s *service) GetToken(transactionID string, amount int, user user.User) (string, error) {
+	if transactionID == "" || amount <= 0 {
 		return "", errors.New("invalid transaction")
 	}
 	if user.Email == "" || user.Name == "" {
@@ -40,7 +39,7 @@ func (s *service) GetToken(transactionID int, amount int, user user.User) (strin
 
 	snapRequest := &midtrans.SnapReq{
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  strconv.Itoa(transactionID),
+			OrderID:  transactionID,
 			GrossAmt: int64(amount),
 		},
 		CustomerDetail: &midtrans.CustDetail{
