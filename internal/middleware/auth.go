@@ -4,7 +4,6 @@ import (
 	"akupeduli/internal/auth"
 	"akupeduli/internal/helper"
 	"akupeduli/internal/user"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -39,10 +38,8 @@ func AuthMiddleware(authService auth.Service, userService user.Service) gin.Hand
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
 			return
 		}
-		fmt.Println(claim)
 		userId := claim["user_id"].(string)
 		user, err := userService.GetUserById(userId)
-
 		if err != nil {
 			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)

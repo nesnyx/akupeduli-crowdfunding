@@ -62,7 +62,7 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	currentUser := c.MustGet("currentUser").(user.User)
 	input.User = currentUser
 
-	createCampaign, err := h.service.CreateCampaign(input)
+	createCampaign, err := h.service.CreateCampaign(input, currentUser.ID)
 	if err != nil {
 		response := helper.APIResponse("Failed to create a new campaign", http.StatusBadRequest, "error", nil)
 		c.JSON(http.StatusBadRequest, response)

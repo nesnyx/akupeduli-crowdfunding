@@ -10,7 +10,7 @@ import (
 type Service interface {
 	GetCampaigns(userId string) ([]Campaign, error)
 	GetCampaignById(input GetCampaignDetailInput) (Campaign, error)
-	CreateCampaign(input CreateCampaignInput) (Campaign, error)
+	CreateCampaign(input CreateCampaignInput, userId string) (Campaign, error)
 	UpdateCampaign(id GetCampaignDetailInput, input CreateCampaignInput) (Campaign, error)
 	SaveCampaignImage(input CreateCampignImageInput, filLocation string) (CampaignImages, error)
 }
@@ -47,15 +47,14 @@ func (s *service) GetCampaignById(input GetCampaignDetailInput) (Campaign, error
 	return campaign, nil
 }
 
-func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
-
+func (s *service) CreateCampaign(input CreateCampaignInput, userId string) (Campaign, error) {
 	campaign := Campaign{}
 	campaign.Name = input.Name
 	campaign.ShortDescription = input.Description
 	campaign.Description = input.Description
 	campaign.Perks = input.Perks
 	campaign.GoalAmount = input.GoalAmount
-	campaign.User.ID = input.User.ID
+	campaign.UserID = userId
 
 	slugMake := fmt.Sprintf("%s %s", input.Name, input.User.ID)
 	campaign.Slug = slug.Make(slugMake)
