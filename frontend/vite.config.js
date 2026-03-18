@@ -9,6 +9,8 @@ export default defineConfig({
     cors: true,
   },
   preview: {
-    port: 3105, strictPort: true,host:true,cors: true,
+    port: 3105, strictPort: true,host:true,cors: true,allowedHosts: [
+      'peduli.nadinata.org' // Tambahkan domain kamu di sini
+    ]
   }
 })
