@@ -2,7 +2,7 @@ import { api } from "./api";
 
 
 export const campaigns = {
-    getAll: async (userId = null) => {
+    getAll: async (userId) => {
         const url = userId ? `/campaigns?user_id=${userId}` : `/campaigns`;
         const response = await api.get(url);
         return response.data;

@@ -6,7 +6,7 @@ import { Users } from "lucide-react";
 import { useMyCampaigns } from "../../../../hooks/useCampaigns";
 
 export default function Campaings({ setIsCreateModalOpen, setIsUpdateModalOpen, formatCurrency, setSelectedCampaign, user }) {
-    const { data, isLoading, isError, error } = useMyCampaigns(user?.id);
+    const { data, isLoading, isError, error } = useMyCampaigns(user.id);
     if (isLoading) return <Loader2 className="animate-spin" />;
     if (isError) return <div>Error: {error.message}</div>;
     const totalRaised = data?.data?.reduce((acc, curr) => acc + curr.CurrentAmount, 0) || 0;

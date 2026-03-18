@@ -13,7 +13,6 @@ const useAuthStore = create((set) => ({
             set({ user: null, isAuthenticated: false, loading: false });
             return;
         }
-
         try {
             const response = await getMe();
             set({ user: response.data, isAuthenticated: true, loading: false });

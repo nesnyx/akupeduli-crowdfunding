@@ -6,7 +6,6 @@ import (
 	"akupeduli/internal/user"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +19,7 @@ func NewCampaignHandler(service campaign.Service) *campaignHandler {
 }
 
 func (h *campaignHandler) GetCampaigns(c *gin.Context) {
-	userId, _ := strconv.Atoi(c.Query("user_id"))
+	userId := c.Query("user_id")
 	campaigns, err := h.service.GetCampaigns(string(userId))
 	if err != nil {
 		response := helper.APIResponse("Error to get Campaigns", http.StatusBadRequest, "error", campaign.FormatCampaigns(campaigns))
@@ -29,7 +28,6 @@ func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 	}
 	response := helper.APIResponse("List of Campaigns", http.StatusOK, "success", campaigns)
 	c.JSON(http.StatusOK, response)
-
 }
 
 func (h *campaignHandler) GetCampaign(c *gin.Context) {
