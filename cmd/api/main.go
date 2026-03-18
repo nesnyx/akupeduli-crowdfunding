@@ -32,7 +32,6 @@ func main() {
 	// 	log.Fatalf("AutoMigrate failed: %v", err)
 	// }
 	router := gin.Default()
-
 	router.Use(gin.Recovery())
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
