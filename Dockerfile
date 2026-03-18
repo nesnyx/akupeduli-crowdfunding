@@ -1,38 +1,42 @@
 # STAGE 1: Build
-FROM golang:1.22-alpine AS builder
+# Gunakan versi 1.24 sesuai kebutuhan go.mod kamu
+FROM golang:1.24-alpine AS builder
 
-# Install git/ca-certificates if your private modules or HTTPS calls need them
-RUN apk add --no-cache git ca-certificates && update-ca-certificates
+# install build-base jika ada dependency CGO, tapi karena kita pakai CGO_ENABLED=0, 
+# kita cukup butuh ca-certificates & git
+RUN apk add --no-cache git ca-certificates tzdata && update-ca-certificates
 
-# Set the working directory
 WORKDIR /src
 
-# Leverage Docker cache: Download dependencies first
+# 1. Cache dependencies (Layer ini tidak akan jalan ulang kalau go.mod/sum tidak berubah)
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the rest of the source code
+# 2. Copy source code
 COPY . .
 
-# Build the binary
-# -ldflags="-s -w" removes debug info (smaller binary)
-# CGO_ENABLED=0 ensures the binary is statically linked
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/main ./cmd/api/main.go
+# 3. Build
+# Kita tambahkan -trimpath untuk menghilangkan path lokal di binary (lebih aman/clean)
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags="-s -w" \
+    -trimpath \
+    -o /app/main ./cmd/api/main.go
 
 # STAGE 2: Final Runtime
 FROM scratch
 
-# Copy SSL certs from builder (essential if your app calls external APIs)
+# Copy zona waktu agar time.Now() di Go tidak ngaco (UTC/WIB)
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+# Copy SSL certs untuk HTTPS calls
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+# Copy user info agar kita bisa jalan sebagai non-root (opsional tapi best practice)
+COPY --from=builder /etc/passwd /etc/passwd
 
-# Copy the compiled binary from the builder stage
+# Copy binary
 COPY --from=builder /app/main /main
 
-# Optional: Copy static assets if your Go app serves them
-# COPY --from=builder /src/public /public
-
-# Use a non-privileged port (Coolify handles the mapping)
+# Gunakan port yang kamu mau
 EXPOSE 3104
 
-# Run the binary
+# Jalankan aplikasi
 ENTRYPOINT ["/main"]
