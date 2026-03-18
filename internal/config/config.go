@@ -22,6 +22,7 @@ type Config struct {
 	PostgresPort       string
 	PostgresHost       string
 	PostgresSSL        string
+	FrontendURL        string
 }
 
 var AppConfig *Config
@@ -46,6 +47,7 @@ func LoadConfig() (*Config, error) {
 		PostgresPort:       getEnv("POSTGRESQL_PORT", ""),
 		PostgresHost:       getEnv("POSTGRESQL_HOST", ""),
 		PostgresSSL:        getEnv("POSTGRESQL_SSL", ""),
+		FrontendURL:        getEnv("FRONTEND_URL", ""),
 	}
 	return AppConfig, nil
 }

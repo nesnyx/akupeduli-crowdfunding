@@ -19,7 +19,7 @@ func SetupRouterUser(routerGroup *gin.RouterGroup, cfg *config.Config, db *gorm.
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
 	authService := auth.NewService(cfg)
-	userHandler := handler.NewUserHandler(userService, authService)
+	userHandler := handler.NewUserHandler(userService, authService, cfg)
 	router := routerGroup.Group("/users")
 	{
 		router.POST("/register", userHandler.RegisterUser)

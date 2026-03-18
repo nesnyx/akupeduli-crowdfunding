@@ -2,6 +2,7 @@ package handler
 
 import (
 	"akupeduli/internal/auth"
+	"akupeduli/internal/config"
 	"akupeduli/internal/helper"
 	"akupeduli/internal/user"
 	"encoding/json"
@@ -17,10 +18,11 @@ import (
 type userHandler struct {
 	userService user.Service
 	authService auth.Service
+	cfg         *config.Config
 }
 
-func NewUserHandler(userService user.Service, authService auth.Service) *userHandler {
-	return &userHandler{userService, authService}
+func NewUserHandler(userService user.Service, authService auth.Service, cfg *config.Config) *userHandler {
+	return &userHandler{userService, authService, cfg}
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
@@ -121,17 +123,15 @@ func (h *userHandler) GoogleCallback(c *gin.Context) {
 	}
 
 	c.SetCookie("oauth_state", "", -1, "/", "", false, true)
-	frontendURL := "http://localhost:5173/auth-success"
+	frontendURL := h.cfg.FrontendURL
 	c.Redirect(http.StatusFound, fmt.Sprintf("%s#token=%s", frontendURL, token))
 }
 
 func (h *userHandler) Login(c *gin.Context) {
 	var input user.LoginInput
-
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
-		errors := helper.FormatValidationError(err)
-		errorMessage := gin.H{"errors": errors}
+		errorMessage := gin.H{"errors": err}
 		response := helper.APIResponse("Login failed", http.StatusUnprocessableEntity, "error", errorMessage)
 		c.JSON(http.StatusBadRequest, response)
 		return
