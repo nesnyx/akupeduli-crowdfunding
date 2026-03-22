@@ -74,7 +74,6 @@ func (s *jwtService) GetGoogleUserInfo(code string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
 	if err != nil {
 		return nil, err

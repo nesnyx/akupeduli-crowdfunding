@@ -27,7 +27,6 @@ func NewUserHandler(userService user.Service, authService auth.Service, cfg *con
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
 	var input user.RegisterUserInput
-
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
 		errors := helper.FormatValidationError(err)
@@ -68,21 +67,17 @@ func (h *userHandler) LoginGoogle(c *gin.Context) {
 func (h *userHandler) GoogleCallback(c *gin.Context) {
 	stateQuery := c.Query("state")
 	stateCookie, err := c.Cookie("oauth_state")
-
-	// Debugging Cookie jika stateQuery != stateCookie
 	if err != nil || stateQuery != stateCookie {
 		fmt.Printf("State Mismatch! Query: %s, Cookie: %s, Err: %v\n", stateQuery, stateCookie, err)
 		c.JSON(http.StatusBadRequest, helper.APIResponse("Invalid oauth state", http.StatusBadRequest, "error", nil))
 		return
 	}
-
 	code := c.Query("code")
 	userInfoByte, err := h.authService.GetGoogleUserInfo(code)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, helper.APIResponse("Failed to get user info", http.StatusBadRequest, "error", nil))
 		return
 	}
-
 	var googleUser struct {
 		Email string `json:"email"`
 		Name  string `json:"name"`
